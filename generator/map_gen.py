@@ -36,7 +36,8 @@ def sample_boolean():
 
 
 def valid_primitive(primitive, executor):
-    hack_expr = ["union", primitive, primitive]
+    # hack_expr = ["union", primitive, primitive]
+    hack_expr = [primitive]
     output = executor.execute(hack_expr)
     occupancy = output.mean().item()
 
@@ -64,7 +65,7 @@ def valid_program(all_programs, executor):
         return False
 
 
-def get_random_csg_program(executor, n_ops=6):
+def get_random_csg_program(executor, n_ops=2):
 
     while (True):
         init_primitive = sample_primitive()
@@ -84,9 +85,8 @@ def get_random_csg_program(executor, n_ops=6):
                 new_program = [new_op, new_primitive] + csg_program
             else:
                 # right
-                new_program = [new_op, new_primitive] + csg_program
-            new_prim_expr = ['union', new_primitive, new_primitive]
-            all_programs = [new_program, csg_program, new_prim_expr]
+                new_program = [new_op] + csg_program +  [new_primitive]
+            all_programs = [new_program, csg_program, [new_primitive]]
             if valid_program(all_programs, executor):
                 break
             else:
@@ -95,12 +95,21 @@ def get_random_csg_program(executor, n_ops=6):
     # quick render file:
     return csg_program
 
+def get_map(executor, n_ops=2):
+    
+    map_expr = get_random_csg_program(executor, n_ops)
+    map_tensor = executor.execute(map_expr)
+    map_tensor = map_tensor.cpu().numpy()
+    
+    return map_tensor
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
+    
     import sys
     sys.path.insert(0, './')
     from csg_lib import CSG2DExecutor
-    device = th.device('cuda')
-    executor = CSG2DExecutor(64, device)
-    csg_program = get_random_csg_program(executor, n_ops=2)
-    print(csg_program)
+    from generator.map_gen import get_random_csg_program
+    executor = CSG2DExecutor(64, th.device('cuda'))
+
+    random_program = get_map(executor, n_ops=4)

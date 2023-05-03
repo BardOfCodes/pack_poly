@@ -194,8 +194,11 @@ class CSG2DCompiler:
                 command_graph = self.resolve_rule(command_graph, rule_match)
 
         # now convert the intersection nodes into intersection arrays:
-        intersection_matrix = self.get_intersection_array(
-            command_graph, n_prims, draw_start)
+        if n_prims == 1:
+            intersection_matrix = th.Tensor([[True]]).to(self.device).bool()
+        else:
+            intersection_matrix = self.get_intersection_array(
+                command_graph, n_prims, draw_start)
 
         return intersection_matrix, command_graph
 
