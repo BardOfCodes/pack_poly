@@ -2,7 +2,7 @@
 #NEW:
 .vscode/*
 *.ipynb_checkpoints
-
+.cache/*
 __pycache__/
 *.py[cod]
 *$py.class

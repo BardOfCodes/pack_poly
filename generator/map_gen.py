@@ -95,11 +95,12 @@ def get_random_csg_program(executor, n_ops=2):
     # quick render file:
     return csg_program
 
-def get_map(executor, n_ops=2):
+def get_map(executor, n_ops=2, return_np=False):
     
     map_expr = get_random_csg_program(executor, n_ops)
     map_tensor = executor.execute(map_expr)
-    map_tensor = map_tensor.cpu().numpy()
+    if return_np:
+        map_tensor = map_tensor.cpu().numpy()
     
     return map_tensor
 
