@@ -4,6 +4,14 @@ import viz.visualize as viz
 import packing.tetriminoes as tet
 
 z3.set_param('parallel.enable', True)
+z3.set_param('parallel.threads.max', 14)
+
+def is_cell_covered(x, y, polyominoes):
+    return Or([And(polyomino.placed,
+                   x == polyomino.x + rotated_dx,
+                   y == polyomino.y + rotated_dy)
+               for polyomino in polyominoes
+               for rotated_dx, rotated_dy in [rotated_coordinates(dx, dy, polyomino.rotation) for dx, dy in polyomino.blocks]])
 
 def cell_value(z3_board, x, y):
     height = len(z3_board)
@@ -90,6 +98,7 @@ def solve_polyomino_packing(polyominoes, board):
 
     z3_polyominoes = [Polyomino(p, z3_board) for p in polyominoes]
     solver = Solver()
+    # solver = z3.SolverFor("QF_BV")
 
     # Add constraints for the board cells
     for i in range(len(board)):
@@ -101,7 +110,12 @@ def solve_polyomino_packing(polyominoes, board):
         solver.add(polyomino_constraints(polyomino, other_polyominoes))
     
     # constraint that all polyominoes must be placed
-    solver.add([polyomino.placed for polyomino in z3_polyominoes])
+    # solver.add([polyomino.placed for polyomino in z3_polyominoes])
+
+    for i in range(len(board)):
+        for j in range(len(board[0])):
+            if board[i][j] == 0:
+                solver.add(is_cell_covered(j, i, z3_polyominoes))
 
     if solver.check() == sat:
         solution = solver.model()

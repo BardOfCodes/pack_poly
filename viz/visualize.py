@@ -1,4 +1,7 @@
 import matplotlib.pyplot as plt
+import os
+
+out_dir = lambda x: os.path.join('./outputs/', x) 
 
 colors = ['blue', 'red', 'green', 'orange', 'purple', 'brown', 'pink', 'gray', 'olive', 'cyan', 'magenta', 'yellow', 'black', 'white']
 
@@ -25,7 +28,7 @@ def draw_edges(polymino, ax, x_offset=0, y_offset=0, color='black'):
     ax.set_aspect('equal')
     ax.axis('off')
 
-def draw_polymino_set(polyminoes, colors=None):
+def draw_polymino_set(polyminoes, colors=None, filename='polymino_set'):
     '''
     Draw a set of 
     '''
@@ -38,9 +41,9 @@ def draw_polymino_set(polyminoes, colors=None):
         draw_edges(polymino, ax)
         i += 1
 
-    plt.show()
+    plt.savefig(out_dir(filename), bbox_inches='tight')
 
-def draw_packing(polyminoes, locations, board_width, board_height):
+def draw_packing(polyminoes, locations, board_width, board_height, filename='packing'):
     
     def draw_polymino(polymino, ax, x_offset=0, y_offset=0, color='blue'):
         for x, y in polymino:
@@ -58,4 +61,5 @@ def draw_packing(polyminoes, locations, board_width, board_height):
         draw_edges(polymino, ax, x_offset, y_offset, color='black')
         draw_polymino(polymino, ax, x_offset, y_offset, color=c)
         i += 1
-    plt.show()
+    
+    plt.savefig(out_dir(filename), bbox_inches='tight')
