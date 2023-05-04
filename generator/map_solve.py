@@ -2,7 +2,7 @@ import time
 from generator.map_gen import get_map
 import packing.tetriminoes as tet
 from csg_lib import CSG2DExecutor
-from packing.polymino import poly_gen_helper
+from packing.polymino import poly_generator
 import torch as th
 import numpy as np
 
@@ -30,18 +30,18 @@ class ListPolyGenerator():
             
         return cur_poly
     
-    def flip_y(self, poly):
-        poly[:, 1] *= -1
-        min_val = np.min(poly[:, 1])
-        if min_val < 0:
-            poly[:, 1] += -min_val
-        return poly
-        
     def flip_x(self, poly):
         poly[:, 0] *= -1
         min_val = np.min(poly[:, 0])
         if min_val < 0:
             poly[:, 0] += -min_val
+        return poly
+        
+    def flip_y(self, poly):
+        poly[:, 1] *= -1
+        min_val = np.min(poly[:, 1])
+        if min_val < 0:
+            poly[:, 1] += -min_val
         return poly
         
         
@@ -72,6 +72,7 @@ def solve_puzzle_greedy(map_np, poly_generator, poly_try_limit=200, n_outer_try=
         sample_poly, poly_sig = poly_generator.sample()
         poly_try_count = 0
         solved = False
+        # Commented out random position sampling
         # while (poly_try_count < poly_try_limit):
         #     # Sample a position from n_options:
         #     position = n_options[np.random.randint(n_options.shape[0])]
@@ -137,13 +138,13 @@ def get_formatted_solution(res, solution, poly_generator):
         # flip x, y
         # poly = poly_generator.flip_y(poly)
         poly = poly.tolist()
-        poly = [(x[1], x[0]) for x in poly]
-        # formatted_solution.append(poly)
+        # poly = [(x[1], x[0]) for x in poly]
+        formatted_solution.append(poly)
         
         pos = np.array([sol[1]])
         # pos = poly_generator.flip_x(pos)
         pos = pos.tolist()[0]
-        pos = tuple([pos[1], res - pos[0]])
+        # pos = tuple([pos[1], res - pos[0]])
         positions.append(pos)
         
     return formatted_solution, positions
@@ -153,27 +154,25 @@ def get_formatted_solution(res, solution, poly_generator):
 def generate_puzzle(board_size, polymino_N):
     device = th.device('cuda')
     executor = CSG2DExecutor(board_size, device)
+    all_poly = poly_generator(polymino_N)
+    poly_gen = ListPolyGenerator(all_poly)
 
-    map_np = get_map(executor, n_ops=3, return_np=True)
-
-    all_poly = poly_gen_helper(polymino_N, save_file=False)
-
-    # poly_tensors = generate_poly_tensors(all_poly, device)
-
-    poly_generator = ListPolyGenerator(all_poly)
-
-    new_map, solution = solve_puzzle_greedy(map_np, poly_generator)
-    
+    while(True):
+        map_np = get_map(executor, n_ops=3, return_np=True)
+        # poly_tensors = generate_poly_tensors(all_poly, device)
+        new_map, solution = solve_puzzle_greedy(map_np, poly_gen)
+        if len(solution) > 0:
+            break
     map_np = ~map_np.astype(bool)
     new_map = ~new_map.astype(bool)
     
-    formatted_poly, positions = get_formatted_solution(board_size, solution, poly_generator)
+    formatted_poly, positions = get_formatted_solution(board_size, solution, poly_gen)
 
-    return map_np, new_map, formatted_poly, positions
+    return new_map, formatted_poly, positions
 
 
 if __name__ == "__main__":
 
-    map_np, new_map, formatted_poly, positions = generate_puzzle(board_size=8, polymino_N=4)
+    new_map, formatted_poly, positions = generate_puzzle(board_size=8, polymino_N=4)
     print("number of polyminos: ", len(formatted_poly))
     
