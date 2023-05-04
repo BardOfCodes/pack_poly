@@ -1,6 +1,15 @@
-from z3 import Bool, Int, And, Or, Solver, Not, sat, If
+import z3
+from z3 import Bool, Int, And, Or, Solver, Not, sat, If, Sum
 import viz.visualize as viz
 import packing.tetriminoes as tet
+
+z3.set_param('parallel.enable', True)
+
+def cell_value(z3_board, x, y):
+    height = len(z3_board)
+    width = len(z3_board[0])
+    elements = [If(And(i == y, j == x), z3_board[i][j], 0) for i in range(height) for j in range(width)]
+    return Sum(elements)
 
 def rotated_coordinates(x, y, rotation):
     # Z3 rotation :
@@ -29,39 +38,15 @@ def apply_rotations(blocks, rotations):
     return rotated_blocks
 
 class Polyomino:
-    def __init__(self, polyomino, board_width, board_height):
+    def __init__(self, polyomino, board):
         self.blocks = polyomino
-        self.width = board_width
-        self.height = board_height
+        self.board = board
+        self.width = len(board[0])
+        self.height = len(board)
         self.placed = Bool(f"placed_{id(self)}")
         self.x = Int(f"x_{id(self)}")
         self.y = Int(f"y_{id(self)}")
         self.rotation = Int(f"rotation_{id(self)}") 
-
-# def polyomino_constraints(polyomino, other_polyominoes):
-#     constraints = []
-
-#     for dx, dy in polyomino.blocks:
-#         x = polyomino.x + dx
-#         y = polyomino.y + dy
-
-#         # The polyomino must be placed within the board
-#         constraints.append(And(x >= 0, x < polyomino.width, y >= 0, y < polyomino.height))
-
-#         # The polyomino must not overlap with any other polyominoes
-#         for other_polyomino in other_polyominoes:
-#             for other_dx, other_dy in other_polyomino.blocks:
-#                 other_x = other_polyomino.x + other_dx
-#                 other_y = other_polyomino.y + other_dy
-#                 constraints.append(Or(Not(polyomino.placed),
-#                                       Not(other_polyomino.placed),
-#                                       x != other_x,
-#                                       y != other_y))
-
-#     # If the polyomino is not placed, its position variables should not affect the constraints
-#     constraints.append(Or(polyomino.placed, And(polyomino.x == 0, polyomino.y == 0)))
-
-#     return constraints
 
 def polyomino_constraints(polyomino, other_polyominoes):
     constraints = []
@@ -73,6 +58,10 @@ def polyomino_constraints(polyomino, other_polyominoes):
 
         # The polyomino must be placed within the board
         constraints.append(And(x >= 0, x < polyomino.width, y >= 0, y < polyomino.height))
+
+        # The polyomino must not be placed on blocked cells
+        constraints.append(If(polyomino.placed, cell_value(polyomino.board, x, y) == 0, True))
+        # constraints.append(If(polyomino.placed, polyomino.board[y][x] == 0, True))
 
         # The polyomino must not overlap with any other polyominoes
         for other_polyomino in other_polyominoes:
@@ -96,9 +85,16 @@ def polyomino_constraints(polyomino, other_polyominoes):
 
     return constraints
 
-def solve_polyomino_packing(polyominoes, board_width, board_height):
-    z3_polyominoes = [Polyomino(p, board_width, board_height) for p in polyominoes]
+def solve_polyomino_packing(polyominoes, board):
+    z3_board = [ [ Int(f"cell_{i}_{j}") for j in range(len(board[0]))] for i in range(len(board)) ]
+
+    z3_polyominoes = [Polyomino(p, z3_board) for p in polyominoes]
     solver = Solver()
+
+    # Add constraints for the board cells
+    for i in range(len(board)):
+        for j in range(len(board[0])):
+            solver.add(z3_board[i][j] == board[i][j])
 
     for polyomino in z3_polyominoes:
         other_polyominoes = [p for p in z3_polyominoes if p != polyomino]
@@ -140,7 +136,14 @@ if __name__ == '__main__':
         tet.SQUARE,
         tet.SQUARE
     ]
-    blocks, locations, rotations = solve_polyomino_packing(polyominoes, W, H)
+    board = [
+        [0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0],
+        [0, 1, 1, 1, 1],
+        [0, 1, 1, 1, 1]
+    ]
+    blocks, locations, rotations = solve_polyomino_packing(polyominoes, board)
     rotated_blocks = apply_rotations(blocks, rotations)
     if locations:
         viz.draw_packing(rotated_blocks, locations, W, H)

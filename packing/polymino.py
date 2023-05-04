@@ -2,9 +2,9 @@ from time import time
 from concurrent.futures import ProcessPoolExecutor, wait
 from viz.visualize import colors, draw_polymino_set
 
-class Polymino():
+class Polyomino():
     def __init__(self, N=4) -> None:
-        polys = poly_generator(N)
+        polys = poly_generator(N, workers=1)
         self.polys = polys
         self.N = N
         self.colors = colors[:len(polys)]
@@ -135,10 +135,10 @@ def pretty_print(tiles):
         print()
 
 def poly_generator(N, workers=10):
-    executor = ProcessPoolExecutor(max_workers=10)
+    executor = ProcessPoolExecutor(max_workers=workers)
     root = [(0,0)]
     return level_multi(root, root, executor, N)
 
-if __name__ == '__main__':
-    polyset = Polymino(5)
-    polyset.viz()
+# if __name__ == '__main__':
+#     polyset = Polymino(5)
+#     polyset.viz()
