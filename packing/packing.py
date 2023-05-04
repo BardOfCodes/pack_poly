@@ -110,12 +110,13 @@ def solve_polyomino_packing(polyominoes, board):
         solver.add(polyomino_constraints(polyomino, other_polyominoes))
     
     # constraint that all polyominoes must be placed
-    # solver.add([polyomino.placed for polyomino in z3_polyominoes])
+    solver.add([polyomino.placed for polyomino in z3_polyominoes])
 
-    for i in range(len(board)):
-        for j in range(len(board[0])):
-            if board[i][j] == 0:
-                solver.add(is_cell_covered(j, i, z3_polyominoes))
+    # constraint that all cells must be covered
+    # for i in range(len(board)):
+    #     for j in range(len(board[0])):
+    #         if board[i][j] == 0:
+    #             solver.add(is_cell_covered(j, i, z3_polyominoes))
 
     if solver.check() == sat:
         solution = solver.model()

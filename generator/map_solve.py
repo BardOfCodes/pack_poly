@@ -175,4 +175,6 @@ if __name__ == "__main__":
 
     new_map, formatted_poly, positions = generate_puzzle(board_size=8, polymino_N=4)
     print("number of polyminos: ", len(formatted_poly))
-    
+    print("positions: ", positions)
+    print("polyminos: ", formatted_poly)
+    print(new_map)
