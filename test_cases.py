@@ -91,6 +91,7 @@ def run_tests():
             test.polyominoes, test.board)
         total_elapsed += time.time() - start
         rotated_blocks = P.apply_rotations(blocks, rotations)
+        verify_solution(test.board, rotated_blocks, locations)
         if locations:
             viz.draw_packing(rotated_blocks, locations,
                              len(test.board[0]), len(test.board))
