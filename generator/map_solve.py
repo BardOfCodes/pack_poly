@@ -108,11 +108,11 @@ def solve_puzzle_greedy(map_np, poly_generator, poly_try_limit=200, n_outer_try=
         if outer_try_count > n_outer_try:
             # Quit search
             et = time.time()
-            print("Time taken: ", et - st)
+            # print("Time taken: ", et - st)
             count_failure = np.sum(np_map_np == 1)
             count_success = np.sum(np_map_np == 2)
-            print("Failure count: ", count_failure)
-            print("Success count: ", count_success)
+            # print("Failure count: ", count_failure)
+            # print("Success count: ", count_success)
             break
 
     # convert map to not contain any ones:

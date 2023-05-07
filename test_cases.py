@@ -4,6 +4,7 @@ import packing.tetriminoes as tet
 import numpy as np
 import time
 from packing.polymino import poly_generator
+from generator.map_solve import generate_puzzle
 
 def empty_board(H, W):
     # to bool:
@@ -33,6 +34,45 @@ tests = [
         poly_generator(N=5)
     ),
 ]
+# Tests for partially empty boards
+
+# Property Based Testing via Generator
+# Test for existence
+def generate_and_solve(board_size=8, polymino_N=3, min_count=5, n_test=10):
+    # brute force to generate larger puzzle
+    for test_id in range(n_test):
+        while True:
+            board, formatted_poly, positions = generate_puzzle(board_size=board_size, 
+                                                               polymino_N=polymino_N)
+            if len(formatted_poly) > min_count:
+                break
+        board = (board).astype(bool)
+        board = np.flip(board, 0).tolist()
+        formatted_poly = [[(y[0], y[1]) for y in x] for x in formatted_poly]
+        blocks, locations, rotations = P.solve_polyomino_packing(formatted_poly, board)
+        rotated_blocks = P.apply_rotations(blocks, rotations)
+        # verify solution?
+        verify_solution(board, rotated_blocks, locations)
+
+
+
+def verify_solution(board, blocks, locations):
+    H, W = len(board), len(board[0])
+    filled_positions = []
+    for ind, cur_block in enumerate(blocks):
+        # check if block is in board
+        cur_location = locations[ind]
+        for dx, dy in cur_block:
+            pos = (cur_location[0] + dx, cur_location[1] + dy)
+            assert 0 <= pos[1] < H
+            assert 0 <= pos[0] < W
+            assert board[pos[1]][pos[0]] == False
+            filled_positions.append(pos)
+    for i in range(H):
+        for j in range(W):
+            if board[i][j] == 0:
+                assert (j, i) in filled_positions
+    
 
 def run_tests():
     total_elapsed = 0
@@ -46,6 +86,13 @@ def run_tests():
             viz.draw_packing(rotated_blocks, locations, len(test.board[0]), len(test.board))
 
     print(f"Total elapsed time: {total_elapsed / 60} minutes")
+    
+    # for generated tests:
+    print("Testing with generated puzzles")
+    start = time.time()
+    generate_and_solve(board_size=4, polymino_N=3, min_count=1, n_test=10)
+    end = time.time()
+    print(f"Total elapsed time: {(end - start) / 60} minutes")
 
 if __name__ == '__main__':
     run_tests()

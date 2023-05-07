@@ -7,12 +7,12 @@ import random
 BOOLEAN = ['union', 'intersection', 'difference']
 PRIMITIVE = ['rectangle', 'ellipse']
 
-TRANSLATION_BOUNDS = (-0.5, 0.5)
+TRANSLATION_BOUNDS = (-0.8, 0.8)
 SCALE_BOUNDS = (0.25, 1.5)
 ROTATION_BOUNDS = (-np.pi, np.pi)
 
-PRIM_OCC_LIMITS = [0.05, 0.1]
-PROGRAM_OCC_LIMIT = [0.1, 0.2]
+PRIM_OCC_LIMITS = [0.1, 0.2]
+PROGRAM_OCC_LIMIT = [0.1, 0.5]
 CHILD_MATCH_LIMIT = 0.8
 
 
@@ -72,7 +72,8 @@ def get_random_csg_program(executor, n_ops=2):
         if valid_primitive(init_primitive, executor):
             break
         else:
-            print("stuck with primitive generation")
+            pass
+            # print("stuck with primitive generation")
     csg_program = [init_primitive]
 
     for i in range(n_ops):
@@ -90,7 +91,8 @@ def get_random_csg_program(executor, n_ops=2):
             if valid_program(all_programs, executor):
                 break
             else:
-                print('stuck with program generation')
+                pass
+                # print('stuck with program generation')
         csg_program = new_program
     # quick render file:
     return csg_program
