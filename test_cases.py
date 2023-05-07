@@ -6,15 +6,18 @@ import time
 from packing.polymino import poly_generator
 from generator.map_solve import generate_puzzle
 
+
 def empty_board(H, W):
     # to bool:
     return np.zeros((H, W)).astype(bool).tolist()
     # return np.zeros((H, W)).tolist()
 
+
 class Test():
     def __init__(self, board, polyominoes):
         self.board = board
         self.polyominoes = polyominoes
+
 
 tests = [
     Test(
@@ -38,22 +41,26 @@ tests = [
 
 # Property Based Testing via Generator
 # Test for existence
+
+
 def generate_and_solve(board_size=8, polymino_N=3, min_count=5, n_test=10):
     # brute force to generate larger puzzle
     for test_id in range(n_test):
         while True:
-            board, formatted_poly, positions = generate_puzzle(board_size=board_size, 
+            board, formatted_poly, positions = generate_puzzle(board_size=board_size,
                                                                polymino_N=polymino_N)
             if len(formatted_poly) > min_count:
                 break
         board = (board).astype(bool)
         board = np.flip(board, 0).tolist()
         formatted_poly = [[(y[0], y[1]) for y in x] for x in formatted_poly]
-        blocks, locations, rotations = P.solve_polyomino_packing(formatted_poly, board)
+        print(
+            f"Running test with board size {len(board)}x{len(board[0])} and {len(formatted_poly)} polyominoes")
+        blocks, locations, rotations = P.solve_polyomino_packing(
+            formatted_poly, board)
         rotated_blocks = P.apply_rotations(blocks, rotations)
         # verify solution?
         verify_solution(board, rotated_blocks, locations)
-
 
 
 def verify_solution(board, blocks, locations):
@@ -72,27 +79,31 @@ def verify_solution(board, blocks, locations):
         for j in range(W):
             if board[i][j] == 0:
                 assert (j, i) in filled_positions
-    
+
 
 def run_tests():
     total_elapsed = 0
     for test in tests:
-        print(f"Running test with board size {len(test.board)}x{len(test.board[0])} and {len(test.polyominoes)} polyominoes")
+        print(
+            f"Running test with board size {len(test.board)}x{len(test.board[0])} and {len(test.polyominoes)} polyominoes")
         start = time.time()
-        blocks, locations, rotations = P.solve_polyomino_packing(test.polyominoes, test.board)
+        blocks, locations, rotations = P.solve_polyomino_packing(
+            test.polyominoes, test.board)
         total_elapsed += time.time() - start
         rotated_blocks = P.apply_rotations(blocks, rotations)
         if locations:
-            viz.draw_packing(rotated_blocks, locations, len(test.board[0]), len(test.board))
+            viz.draw_packing(rotated_blocks, locations,
+                             len(test.board[0]), len(test.board))
 
     print(f"Total elapsed time: {total_elapsed / 60} minutes")
-    
+
     # for generated tests:
     print("Testing with generated puzzles")
     start = time.time()
-    generate_and_solve(board_size=4, polymino_N=3, min_count=1, n_test=10)
+    generate_and_solve(board_size=8, polymino_N=4, min_count=5, n_test=10)
     end = time.time()
     print(f"Total elapsed time: {(end - start) / 60} minutes")
+
 
 if __name__ == '__main__':
     run_tests()
