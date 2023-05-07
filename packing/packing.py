@@ -1,10 +1,11 @@
 import z3
-from z3 import Bool, Int, And, Or, Solver, Not, sat, If, Sum
+from z3 import Bool, Int, And, Or, Solver, Not, sat, If, Sum, BitVec, Int2BV
 import viz.visualize as viz
 import packing.tetriminoes as tet
 
 z3.set_param('parallel.enable', True)
 z3.set_param('parallel.threads.max', 14)
+SPATIAL_BITWIDTH = 5
 
 def is_cell_covered(x, y, polyominoes):
     return Or([And(polyomino.placed,
@@ -16,26 +17,27 @@ def is_cell_covered(x, y, polyominoes):
 def cell_value(z3_board, x, y):
     height = len(z3_board)
     width = len(z3_board[0])
-    elements = [If(And(i == y, j == x), z3_board[i][j], 0) for i in range(height) for j in range(width)]
+    elements = [If(And(i == y, j == x), z3_board[i][j], False) for i in range(height) for j in range(width)]
     return Sum(elements)
 
 def rotated_coordinates(x, y, rotation):
-    # Z3 rotation :
-    return (If(rotation == 0, x, If(rotation == 90, y, If(rotation == 180, -x, -y))),
-            If(rotation == 0, y, If(rotation == 90, -x, If(rotation == 180, -y, x))))
+    # return (Int2BV(If(rotation == 0, x, If(rotation == 1, y, If(rotation == 2, -x, If(rotation == 3, -y, x)))), SPATIAL_BITWIDTH),
+            # Int2BV(If(rotation == 0, y, If(rotation == 1, -x, If(rotation == 2, -y, If(rotation == 3, x, y)))), SPATIAL_BITWIDTH))
+    return (If(rotation == 0, x, If(rotation == 1, y, If(rotation == 2, -x, If(rotation == 3, -y, x)))),
+            If(rotation == 0, y, If(rotation == 1, -x, If(rotation == 2, -y, If(rotation == 3, x, y)))))
 
 def rotator(x, y, rotation):
     # Python rotation :
     if rotation == 0:
         return x, y
-    elif rotation == 90:
+    elif rotation == 1:
         return y, -x
-    elif rotation == 180:
+    elif rotation == 2:
         return -x, -y
-    elif rotation == 270:
+    elif rotation == 3:
         return -y, x
     
-    raise ValueError(f"Invalid rotation {rotation}")
+    # raise ValueError(f"Invalid rotation {rotation}")
 
 def apply_rotations(blocks, rotations):
     rotated_blocks = []
@@ -54,12 +56,18 @@ class Polyomino:
         self.placed = Bool(f"placed_{id(self)}")
         self.x = Int(f"x_{id(self)}")
         self.y = Int(f"y_{id(self)}")
-        self.rotation = Int(f"rotation_{id(self)}") 
+        # self.rotation = Int(f"rotation_{id(self)}") 
+
+        # self.x = BitVec(f"x_{id(self)}", SPATIAL_BITWIDTH)
+        # self.y = BitVec(f"y_{id(self)}", SPATIAL_BITWIDTH)
+        self.rotation = BitVec(f"rotation_{id(self)}", 2)
 
 def polyomino_constraints(polyomino, other_polyominoes):
     constraints = []
 
     for dx, dy in polyomino.blocks:
+        # x = polyomino.x
+        # y = polyomino.y
         rotated_dx, rotated_dy = rotated_coordinates(dx, dy, polyomino.rotation)
         x = polyomino.x + rotated_dx
         y = polyomino.y + rotated_dy
@@ -77,6 +85,8 @@ def polyomino_constraints(polyomino, other_polyominoes):
                 other_rotated_dx, other_rotated_dy = rotated_coordinates(other_dx, other_dy, other_polyomino.rotation)
                 other_x = other_polyomino.x + other_rotated_dx
                 other_y = other_polyomino.y + other_rotated_dy
+                # other_x = other_polyomino.x
+                # other_y = other_polyomino.y
                 constraints.append(Or(Not(polyomino.placed),
                                       Not(other_polyomino.placed),
                                       x != other_x,
@@ -87,14 +97,16 @@ def polyomino_constraints(polyomino, other_polyominoes):
 
     # The rotation variable must be one of the allowed values (0, 90, 180, 270)
     constraints.append(Or(polyomino.rotation == 0,
-                          polyomino.rotation == 90,
-                          polyomino.rotation == 180,
-                          polyomino.rotation == 270))
+                          polyomino.rotation == 1,
+                          polyomino.rotation == 2,
+                          polyomino.rotation == 3))
 
     return constraints
 
 def solve_polyomino_packing(polyominoes, board):
-    z3_board = [ [ Int(f"cell_{i}_{j}") for j in range(len(board[0]))] for i in range(len(board)) ]
+    # z3_board = [ [ Int(f"cell_{i}_{j}") for j in range(len(board[0]))] for i in range(len(board)) ]
+    # z3_board = [ [ BitVec(f"cell_{i}_{j}", SPATIAL_BITWIDTH) for j in range(len(board[0]))] for i in range(len(board)) ]
+    z3_board = [ [ Bool(f"cell_{i}_{j}") for j in range(len(board[0]))] for i in range(len(board)) ]
 
     z3_polyominoes = [Polyomino(p, z3_board) for p in polyominoes]
     solver = Solver()
@@ -128,14 +140,17 @@ def solve_polyomino_packing(polyominoes, board):
                 x = solution.evaluate(polyomino.x).as_long()
                 y = solution.evaluate(polyomino.y).as_long()
                 rotation = solution.evaluate(polyomino.rotation).as_long()
+                # x = solution.evaluate(polyomino.x)
+                # y = solution.evaluate(polyomino.y)
+                # rotation = solution.evaluate(polyomino.rotation)
                 locations += [(x, y)]
                 rotations += [rotation]
                 blocks += [polyomino.blocks]
-                print(f"Polyomino {polyomino.blocks} is placed at ({x}, {y})")
+                # print(f"Polyomino {polyomino.blocks} is placed at ({x}, {y})")
         return blocks, locations, rotations
     else:
         print("No solution found")
-        return None
+        return None, None, None
 
 if __name__ == '__main__':
     # Example usage: pack a 3x20 board with 3 polyominoes

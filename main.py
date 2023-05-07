@@ -10,7 +10,7 @@ def generate_and_solve():
     # brute force to generate larger puzzle
     while True:
         board, formatted_poly, positions = generate_puzzle(board_size=8, polymino_N=4)
-        if len(formatted_poly) > 3:
+        if len(formatted_poly) > 5:
             break
 
     print("number of polyminos: ", len(formatted_poly))
@@ -30,7 +30,7 @@ def generate_and_solve():
         viz.draw_packing(rotated_blocks, locations, len(board[0]), len(board))
 
 def manual_solve():
-    polyominoes = Polyomino(N=5).polys
+    polyominoes = Polyomino(N=4).polys
     # polyominoes = [
     #     tet.T,
     #     tet.T,
@@ -52,7 +52,7 @@ def manual_solve():
         [0, 1, 0, 0, 0, 0, 1, 0],
         [0, 0, 0, 0, 0, 0, 0, 0],
     ]
-    # board = np.zeros((6, 6)).tolist()
+    board = np.zeros((5, 5)).tolist()
     start = time.time()
     blocks, locations, rotations = P.solve_polyomino_packing(polyominoes, board)
     print(f"Elapsed Time: {(time.time() - start) / 60} minutes")
@@ -62,4 +62,5 @@ def manual_solve():
         viz.draw_packing(rotated_blocks, locations, len(board[0]), len(board))
 
 if __name__ == '__main__':
-    generate_and_solve()
+    # generate_and_solve()
+    manual_solve()
