@@ -29,8 +29,6 @@ def stability_exp():
             # replace i-th polyomino with j-th polyomino
 
             for j in range(len(all_polyominoes)):
-                if j == i:
-                    continue
 
                 curr_polyominoes = starting_polys.copy()
                 curr_polyominoes.pop(i)
@@ -64,13 +62,18 @@ def stability_exp():
                 total += 1
 
         success_rates.append(num_success / total)
+        
         logger.info(f"Stability rate: {success_rates[-1]}")
 
     # print(f"Total number of successes: {num_success}"
     #       f" out of {total} trials")
     # print(f"Success rate: {num_success / total}")
     print(success_rates)
-
+    # Print the most stable configuration
+    max_stability = max(success_rates)
+    max_idx = success_rates.index(max_stability)
+    print(f"Most stable configuration: {comb[max_idx]}")
+    print(f"Stability rate: {max_stability}")
 
 if __name__ == '__main__':
     # create a logger:
