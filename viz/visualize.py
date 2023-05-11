@@ -1,9 +1,10 @@
 import matplotlib.pyplot as plt
 import os
+from torchvision.io import read_image
 
 out_dir = lambda x: os.path.join('./outputs/', x) 
 
-colors = ['blue', 'red', 'green', 'orange', 'purple', 'brown', 'pink', 'gray', 'olive', 'cyan', 'magenta', 'yellow', 'black', 'white']
+colors = ['blue', 'red', 'green', 'orange', 'purple', 'brown', 'pink', 'gray', 'olive', 'cyan', 'magenta', 'yellow', 'black']
 
 def draw_poly(polymino, ax, color='blue'):
     for x, y in polymino:
@@ -42,6 +43,7 @@ def draw_polymino_set(polyminoes, colors=None, filename='polymino_set'):
         i += 1
 
     plt.savefig(out_dir(filename), bbox_inches='tight')
+    plt.close()
 
 def draw_packing(polyminoes, locations, board_width, board_height, filename='packing'):
     
@@ -63,3 +65,6 @@ def draw_packing(polyminoes, locations, board_width, board_height, filename='pac
         i += 1
     
     plt.savefig(out_dir(filename), bbox_inches='tight')
+    plt.close()
+
+    return read_image(out_dir(filename + '.png'))

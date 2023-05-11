@@ -149,7 +149,6 @@ def solve_polyomino_packing(polyominoes, board):
                 # print(f"Polyomino {polyomino.blocks} is placed at ({x}, {y})")
         return blocks, locations, rotations
     else:
-        print("No solution found")
         return None, None, None
 
 if __name__ == '__main__':

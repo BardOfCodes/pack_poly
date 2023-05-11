@@ -30,29 +30,18 @@ def generate_and_solve():
         viz.draw_packing(rotated_blocks, locations, len(board[0]), len(board))
 
 def manual_solve():
-    polyominoes = Polyomino(N=4).polys
-    # polyominoes = [
-    #     tet.T,
-    #     tet.T,
-    #     tet.L,
-    #     tet.L,
-    #     tet.L,
-    #     tet.LINE,
-    #     tet.SQUARE,
-    #     tet.SQUARE
-    # ]
-    print(len(polyominoes))
+    polyominoes = Polyomino(N=2).polys
+    
     board = [
-        [0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 1, 0, 0, 0, 0, 1, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 1, 0, 0, 0, 0, 1, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0],
+        [1, 1],
+        [1, 1],
+        [0, 0],
+        [1, 1],
+        [1, 1],
     ]
-    board = np.zeros((5, 5)).tolist()
+    # convert to bool:
+    board = (np.array(board) == 1).tolist()
+    print(board)
     start = time.time()
     blocks, locations, rotations = P.solve_polyomino_packing(polyominoes, board)
     print(f"Elapsed Time: {(time.time() - start) / 60} minutes")
