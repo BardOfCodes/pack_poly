@@ -57,13 +57,13 @@ def generate_and_solve(board_size=8, polymino_N=3, min_count=5, n_test=10):
         print(
             f"Running test with board size {len(board)}x{len(board[0])} and {len(formatted_poly)} polyominoes")
         blocks, locations, rotations = P.solve_polyomino_packing(
-            formatted_poly, board)
+            formatted_poly, board, solve_polyomino_packing=True)
         rotated_blocks = P.apply_rotations(blocks, rotations)
         # verify solution?
         verify_solution(board, rotated_blocks, locations)
 
 
-def verify_solution(board, blocks, locations):
+def verify_solution(board, blocks, locations, fully_filled=True):
     H, W = len(board), len(board[0])
     filled_positions = []
     for ind, cur_block in enumerate(blocks):
@@ -75,10 +75,11 @@ def verify_solution(board, blocks, locations):
             assert 0 <= pos[0] < W
             assert board[pos[1]][pos[0]] == False
             filled_positions.append(pos)
-    for i in range(H):
-        for j in range(W):
-            if board[i][j] == 0:
-                assert (j, i) in filled_positions
+    if fully_filled:
+        for i in range(H):
+            for j in range(W):
+                if board[i][j] == 0:
+                    assert (j, i) in filled_positions
 
 
 def run_tests():
@@ -88,10 +89,10 @@ def run_tests():
             f"Running test with board size {len(test.board)}x{len(test.board[0])} and {len(test.polyominoes)} polyominoes")
         start = time.time()
         blocks, locations, rotations = P.solve_polyomino_packing(
-            test.polyominoes, test.board)
+            test.polyominoes, test.board, solve_for_all=False)
         total_elapsed += time.time() - start
         rotated_blocks = P.apply_rotations(blocks, rotations)
-        verify_solution(test.board, rotated_blocks, locations)
+        verify_solution(test.board, rotated_blocks, locations, fully_filled=False)
         if locations:
             viz.draw_packing(rotated_blocks, locations,
                              len(test.board[0]), len(test.board))

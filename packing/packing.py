@@ -103,7 +103,7 @@ def polyomino_constraints(polyomino, other_polyominoes):
 
     return constraints
 
-def solve_polyomino_packing(polyominoes, board):
+def solve_polyomino_packing(polyominoes, board, solve_for_all=False):
     # z3_board = [ [ Int(f"cell_{i}_{j}") for j in range(len(board[0]))] for i in range(len(board)) ]
     # z3_board = [ [ BitVec(f"cell_{i}_{j}", SPATIAL_BITWIDTH) for j in range(len(board[0]))] for i in range(len(board)) ]
     z3_board = [ [ Bool(f"cell_{i}_{j}") for j in range(len(board[0]))] for i in range(len(board)) ]
@@ -125,10 +125,11 @@ def solve_polyomino_packing(polyominoes, board):
     solver.add([polyomino.placed for polyomino in z3_polyominoes])
 
     # constraint that all cells must be covered
-    # for i in range(len(board)):
-    #     for j in range(len(board[0])):
-    #         if board[i][j] == 0:
-    #             solver.add(is_cell_covered(j, i, z3_polyominoes))
+    if solve_for_all:
+        for i in range(len(board)):
+            for j in range(len(board[0])):
+                if board[i][j] == 0:
+                    solver.add(is_cell_covered(j, i, z3_polyominoes))
 
     if solver.check() == sat:
         solution = solver.model()
