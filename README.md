@@ -6,6 +6,8 @@ CSCI 1710 Project - Polyomino Packing (in Z3)
 
 Group: Aditya Ganeshan, Arman Maesumi
 
+Instructions for running the code can be found in [./instructions.md](./instructions.md)
+
 ## Model Overview
 
 Before creating Z3 constraints, we first needed to decide on a polyomino representation (i.e. how we represent a single polyomino). We chose to canonicalize the polyominoes (keeping one tile at the origin (0,0)), then represent the piece structure using integer offsets from the origin, i.e. (+1, -2). Rotation flags for angles 0, 90, 180, 270 degrees are represented using a BitVec of size 2. Additionally, we represent the container as a 2D array of boolean values. Note, we do not allow reflections in the pieces!
@@ -56,26 +58,14 @@ One question we asked was, how does stability change as `K` increases? `K` corre
 
 > Figure 4. We see that our hypothesis is true in the *average* case. We plot the average stability values over all combinations for varying values of `K`.
 
+## Q/A:
+
+1. **What tradeoffs did you make in choosing your representation? What else did you try that didn’t work as well?** We chose to omit "reflection" as a possible operation available to the packer partially due to complexity of the SMT problem. Our packing problems were already quite complex (in terms of state-space). Also, we found that converting our `rotation` flags to a `BitVec` type, rather than `int` helped quite a bit.
+
+2. **What assumptions did you make about scope? What are the limits of your model?** The model is most limited by scale of the packing problem (of course). We found that, even for relatively small configurations, Z3 needed to run for several hours. For instance, `Figure 1` took about 7 hours to complete. This limited our scope in scale (size of polyominoes and board, and number of polyominoes).
+
+3. **Did your goals change at all from your proposal? Did you realize anything you planned was unrealistic, or that anything you thought was unrealistic was doable?** Our stretch goals did change, but not due to them being unrealistic. Originally we proposed investigated polyomino packing with the added constraint that neighboring pieces should not have the same color (i.e. graph coloring + polyomino packing). We chose to pursue the "stable packing" route instead because it appeared as a more intellectually interesting question; additionally, the graph coloring seemed like a trivial addon to the model.
+
+4. **How should we understand an instance of your model and what your custom visualization shows?** This is addressed in the above figure captions.
+
 ---
-
-# Old README:
-
-## Project Description
-
-Following our curiosity modeling project, we are setting out to model polymino packing. Polyminoes are generalized tetriminoes (Tetris pieces)—i.e. shapes that are formed by connecting N squares together edge to edge. The prototypical instance of a problem statement in our model is: “Given an arbitrary 2D container (a Tetris board in an arbitrary shape) and a set of polyominoes, how can I arrange the polyominoes to fill the container?” Polymino packing is an interesting and challenging problem in computational geometry and discrete mathematics, which involves solving a combinatorial optimization problem that is NP-complete. The problem is connected to various real-world applications, namely manufacturing and logistics, where efficiently packing different objects in a limited space is of relevance. This problem also offers several avenues for exploration: we can impose additional constraints such as assigning a color to each polymino, then enforcing that the packing solution does not have any of the same colors touching each other (turning it into a packing-coloring problem). We also note the existence of a “dual” problem, where we are given a container and a set of sheets of material, and the goal is to find the minimum cost cut that produces a set of polyminoes that fills the container.
-
-## Foundation Goals
-
-1. Create a system which can solve the packing problem for tetriminoes for arbitrary shape containers.
-
-2. Create a system which can solve the packing problem for arbitrary order polyminoes with a fixed rectangular container.
-
-## Target Goals
-
-1. Map arbitrary instances of the polymino packing problem to SAT instances and solve them with appropriate packages.
-
-2. Solve reasonably complex instances of these problems Investigate additional constraints such as polymino coloring
-
-## Reach Goals
-
-For our reach goals, we want to integrate the construction of polyminoes as a part of the problem statement. This system starts with a given container, and a material block. Now the system must "cut" the polyminoes from the material block as well as pack them in the container. The goal would be to maximize packing, while minimizing the number of cuts required (for example, by making many polyminoes with a single cut). Our system will output a pareto boundary of "feasible" solutions with different packing-cutting tradeoffs.
