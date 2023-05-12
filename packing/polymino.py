@@ -55,7 +55,7 @@ def all_variants_nonunique(tile):
     a = tile
     for _ in range(4):
         yield normalize(a)
-        yield normalize(reflect(a))
+        # yield normalize(reflect(a))
         a = rotate90(a)
 
 def all_variants(tile):

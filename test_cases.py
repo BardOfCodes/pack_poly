@@ -5,7 +5,7 @@ import numpy as np
 import time
 from packing.polymino import poly_generator
 from generator.map_solve import generate_puzzle
-
+import _pickle as cPickle
 
 def empty_board(H, W):
     # to bool:
@@ -41,8 +41,6 @@ tests = [
 
 # Property Based Testing via Generator
 # Test for existence
-
-
 def generate_and_solve(board_size=8, polymino_N=3, min_count=5, n_test=10):
     # brute force to generate larger puzzle
     for test_id in range(n_test):
@@ -61,6 +59,8 @@ def generate_and_solve(board_size=8, polymino_N=3, min_count=5, n_test=10):
         rotated_blocks = P.apply_rotations(blocks, rotations)
         # verify solution?
         verify_solution(board, rotated_blocks, locations)
+        solution = [blocks, locations, rotations]
+        cPickle.dump(solution, open(f"outputs/generated_solution_{test_id}.pkl", "wb"))
 
 
 def verify_solution(board, blocks, locations):
@@ -83,7 +83,7 @@ def verify_solution(board, blocks, locations):
 
 def run_tests():
     total_elapsed = 0
-    for test in tests:
+    for test_id, test in enumerate(tests):
         print(
             f"Running test with board size {len(test.board)}x{len(test.board[0])} and {len(test.polyominoes)} polyominoes")
         start = time.time()
@@ -92,9 +92,11 @@ def run_tests():
         total_elapsed += time.time() - start
         rotated_blocks = P.apply_rotations(blocks, rotations)
         verify_solution(test.board, rotated_blocks, locations)
-        if locations:
-            viz.draw_packing(rotated_blocks, locations,
-                             len(test.board[0]), len(test.board))
+        solution = [blocks, locations, rotations]
+        cPickle.dump(solution, open(f"outputs/handcrafted_solution_{test_id}.pkl", "wb"))
+        # if locations:
+        #     viz.draw_packing(rotated_blocks, locations,
+        #                      len(test.board[0]), len(test.board))
 
     print(f"Total elapsed time: {total_elapsed / 60} minutes")
 

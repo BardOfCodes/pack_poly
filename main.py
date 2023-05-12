@@ -33,11 +33,12 @@ def manual_solve():
     polyominoes = Polyomino(N=2).polys
     
     board = [
-        [1, 1],
-        [1, 1],
-        [0, 0],
-        [1, 1],
-        [1, 1],
+        [1, 0, 0, 0, 0, 0, 1],
+        [0, 0, 1, 0, 0, 0, 0],
+        [0, 0, 1, 0, 0, 0, 0],
+        [0, 0, 1, 0, 0, 0, 0],
+        [0, 0, 1, 1, 1, 0, 0],
+        [1, 0, 0, 0, 0, 0, 1],
     ]
     # convert to bool:
     board = (np.array(board) == 1).tolist()
