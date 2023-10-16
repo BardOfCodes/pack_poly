@@ -20,9 +20,8 @@ for all polyominoes with respect to their locations and rotations, we ensure the
 
 We also optionally experiment with two other constraints A) requires that all board tiles are filled B) requires that all polyominoes have been placed. These constraints are useful for different packing tasks. For instance, "A" is useful for exact cover tasks; whereas if you have a surplus of polyominoes (all polyominoes cannot fit in the container), then you would disable "B".
 
->![packing8x8](./figures/packing8x8.png)
-
->Figure 1. An example instance of an 8x8 board with four (white tiles) that are "blocked." We pack the container using the set of canonical pentaminoes.
+![packing8x8](./figures/packing8x8.png)
+Figure 1. An example instance of an 8x8 board with four (white tiles) that are "blocked." We pack the container using the set of canonical pentaminoes.
 
 We define the Z3 model and solving routine in `./packing/packing.py`
 
@@ -40,9 +39,8 @@ We investigated the notion of "stability" in polyomino packing configurations. F
 
 We first compute packings (if they exist) for all combinations with replacement of the given set of polyominoes with respect to a fixed container. We then compute stability scores for each combination by enumerating its neighboring combinations (polyomino sets with distance `K` from the original set).
 
->![stability](./figures/stability1.gif)
-
-> Figure 2. This GIF demonstrates a given polyomino set that is particularly stable: it is packable even with small perturbations in the available pieces. This configuration was identified by our model.
+![stability](./figures/stability1.gif)
+Figure 2. This GIF demonstrates a given polyomino set that is particularly stable: it is packable even with small perturbations in the available pieces. This configuration was identified by our model.
 
 The code for computing stability can be found in `./stability.py`. The computation of packings over all combinations was done in parallel on the CCV Oscar cluster using 32 cores.
 
@@ -50,13 +48,11 @@ The code for computing stability can be found in `./stability.py`. The computati
 
 One question we asked was, how does stability change as `K` increases? `K` corresponds to the amount of noise introduced to the original polyomino configuration, we hypothesized that stability should decrease as `K` increases. We found a counter example to this hypothesis using Z3; however, it seems that this property *usually* holds, but not always. Details are presented in the final presentation, we share a result of this hypothesis here:
 
->![stability_hypothesis](./figures/stability_hypothesis.jpg)
+![stability_hypothesis](./figures/stability_hypothesis.jpg)
+Figure 3. This packing was found as a counter example to our hypothesis. The above configuration has the following stability: Stability(K=1): 0.583, Stability(K=2): 0.868, Stability(K=3): 0.734, Stability(K=4): 0.490. We see that `K=2` offers higher stability than, say, `K=1`.
 
-> Figure 3. This packing was found as a counter example to our hypothesis. The above configuration has the following stability: Stability(K=1): 0.583, Stability(K=2): 0.868, Stability(K=3): 0.734, Stability(K=4): 0.490. We see that `K=2` offers higher stability than, say, `K=1`.
-
->![stability_plot](./figures/stability_plot.png)
-
-> Figure 4. We see that our hypothesis is true in the *average* case. We plot the average stability values over all combinations for varying values of `K`.
+![stability_plot](./figures/stability_plot.png)
+Figure 4. We see that our hypothesis is true in the *average* case. We plot the average stability values over all combinations for varying values of `K`.
 
 ## Q/A:
 
